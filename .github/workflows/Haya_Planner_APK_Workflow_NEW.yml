@@ -5,7 +5,7 @@ on:
   push:
     paths:
       - 'Haya_Planner_GitHub_Android_Source.zip'
-      - '.github/workflows/haya-apk-from-zip.yml'
+      - '.github/workflows/Haya_Planner_APK_Workflow_NEW.yml'
 
 permissions:
   contents: read
@@ -40,6 +40,9 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+          log-accepted-android-sdk-licenses: false
 
       - name: Prepare Android SDK
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
