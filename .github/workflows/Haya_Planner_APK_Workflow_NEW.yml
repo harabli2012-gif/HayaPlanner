@@ -30,7 +30,7 @@ jobs:
       - name: Apply latest app interface and version
         run: |
           cp Haya_Planner_Settings_Override.html source/app/src/main/assets/index.html
-          sed -i "s/versionCode 14/versionCode 15/; s/versionName '1.7.2'/versionName '1.7.3'/" source/app/build.gradle
+          sed -i "s/versionCode 15/versionCode 16/; s/versionName '1.7.3'/versionName '1.7.4'/" source/app/build.gradle
           grep -q "versionName '1.7.3'" source/app/build.gradle
 
       - name: Download offline Quran pages
@@ -75,7 +75,11 @@ jobs:
                   assert name in names and z.getinfo(name).file_size > 3000, f'missing Mushaf page {page}'
               for name in ('assets/index.html', 'assets/adhkar-data.js', 'classes.dex'):
                   assert name in names, f'missing app resource: {name}'
-              print(f'APK verified: {len(pages)} offline Mushaf pages plus app and adhkar assets')
+              html = z.read('assets/index.html').decode('utf-8')
+              assert 'السبحة والعداد' in html, 'missing Tasbeeh counter'
+              assert 'قارئ داخلي' in html, 'missing in-app Kahf reader'
+              assert 'التنبيهات داخل التطبيق' in html, 'missing in-app reminders settings'
+              print(f'APK verified: {len(pages)} offline Mushaf pages plus Tasbeeh, Kahf reader, reminders, app and adhkar assets')
           PY
           unzip -t source/app/build/outputs/apk/debug/app-debug.apk | tail -1
 
