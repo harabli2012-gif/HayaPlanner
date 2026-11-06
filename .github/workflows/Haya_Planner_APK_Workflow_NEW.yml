@@ -6,6 +6,7 @@ on:
     paths:
       - 'Haya_Planner_GitHub_Android_Source.zip'
       - '.github/workflows/Haya_Planner_APK_Workflow_NEW.yml'
+      - 'Haya_Planner_Settings_Override.html'
 
 permissions:
   contents: read
@@ -25,6 +26,12 @@ jobs:
           unzip -oq Haya_Planner_GitHub_Android_Source.zip -d source
           test -s source/app/src/main/assets/index.html
           test -s source/app/src/main/java/com/hayaplanner/app/MainActivity.java
+
+      - name: Apply latest app interface and version
+        run: |
+          cp Haya_Planner_Settings_Override.html source/app/src/main/assets/index.html
+          sed -i "s/versionCode 14/versionCode 15/; s/versionName '1.7.2'/versionName '1.7.3'/" source/app/build.gradle
+          grep -q "versionName '1.7.3'" source/app/build.gradle
 
       - name: Download offline Quran pages
         run: python3 source/scripts/download_mushaf_pages.py
