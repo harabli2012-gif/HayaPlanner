@@ -31,7 +31,7 @@ jobs:
         run: |
           cp Haya_Planner_Settings_Override.html source/app/src/main/assets/index.html
           sed -i "s/versionCode 15/versionCode 16/; s/versionName '1.7.3'/versionName '1.7.4'/" source/app/build.gradle
-          grep -q "versionName '1.7.3'" source/app/build.gradle
+          grep -q "versionName '1.7.4'" source/app/build.gradle
 
       - name: Download offline Quran pages
         run: python3 source/scripts/download_mushaf_pages.py
