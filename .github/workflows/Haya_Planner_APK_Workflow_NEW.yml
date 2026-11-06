@@ -5,7 +5,7 @@ on:
   push:
     paths:
       - 'Haya_Planner_GitHub_Android_Source.zip'
-      - '.github/workflows/haya-apk-from-zip.yml'
+      - '.github/workflows/Haya_Planner_APK_Workflow_NEW.yml'
 
 permissions:
   contents: read
@@ -26,6 +26,9 @@ jobs:
           test -s source/app/src/main/assets/index.html
           test -s source/app/src/main/java/com/hayaplanner/app/MainActivity.java
 
+      - name: Download offline Quran pages
+        run: python3 source/scripts/download_mushaf_pages.py
+
       - name: Install Java 17
         uses: actions/setup-java@v6
         with:
@@ -40,6 +43,9 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+          log-accepted-android-sdk-licenses: false
 
       - name: Prepare Android SDK
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
@@ -47,9 +53,23 @@ jobs:
       - name: Build Android APK
         run: gradle --no-daemon -p source :app:assembleDebug
 
-      - name: Verify APK exists
+      - name: Verify APK and full Mushaf pages
         run: |
           test -s source/app/build/outputs/apk/debug/app-debug.apk
+          python3 - <<'PY'
+          from zipfile import ZipFile
+          apk = 'source/app/build/outputs/apk/debug/app-debug.apk'
+          with ZipFile(apk) as z:
+              names = set(z.namelist())
+              pages = [n for n in names if n.startswith('assets/mushaf/pages/') and n.endswith('.png')]
+              assert len(pages) == 604, f'expected 604 bundled Quran pages; got {len(pages)}'
+              for page in (1, 2, 49, 293, 304, 604):
+                  name = f'assets/mushaf/pages/{page}.png'
+                  assert name in names and z.getinfo(name).file_size > 3000, f'missing Mushaf page {page}'
+              for name in ('assets/index.html', 'assets/adhkar-data.js', 'classes.dex'):
+                  assert name in names, f'missing app resource: {name}'
+              print(f'APK verified: {len(pages)} offline Mushaf pages plus app and adhkar assets')
+          PY
           unzip -t source/app/build/outputs/apk/debug/app-debug.apk | tail -1
 
       - name: Downloadable APK
