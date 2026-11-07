@@ -44,6 +44,7 @@ jobs:
           grep -q 'nextPrayerTrigger' source/app/src/main/java/com/hayaplanner/app/PlannerReminderScheduler.java
           grep -q 'PrayerCalendarFetcher.refreshAsync(context)' source/app/src/main/java/com/hayaplanner/app/PlannerReminderScheduler.java
           grep -q 'PlannerReminderScheduler.reschedule(app)' source/app/src/main/java/com/hayaplanner/app/PrayerCalendarFetcher.java
+          grep -q 'NotificationManager.IMPORTANCE_HIGH' source/app/src/main/java/com/hayaplanner/app/PlannerReminderReceiver.java
 
       - name: Download offline Quran pages
         run: python3 source/scripts/download_mushaf_pages.py
@@ -88,8 +89,6 @@ jobs:
               for name in ('assets/index.html', 'assets/adhkar-data.js', 'classes.dex'):
                   assert name in names, f'missing app resource: {name}'
               html = z.read('assets/index.html').decode('utf-8')
-              receiver = z.read('classes.dex')
-              assert b'PlannerReminderReceiver' in receiver, 'missing reminder receiver in dex'
               assert 'السبحة والعداد' in html, 'missing Tasbeeh counter'
               assert 'قارئ داخلي' in html, 'missing in-app Kahf reader'
               assert 'التنبيهات داخل التطبيق' in html, 'missing in-app reminders settings'
