@@ -37,7 +37,7 @@ jobs:
           cp Haya_Planner_ReminderScheduler_Override.java source/app/src/main/java/com/hayaplanner/app/PlannerReminderScheduler.java
           cp Haya_Planner_PrayerCalendarFetcher_Override.java source/app/src/main/java/com/hayaplanner/app/PrayerCalendarFetcher.java
           cp Haya_Planner_ReminderReceiver_Override.java source/app/src/main/java/com/hayaplanner/app/PlannerReminderReceiver.java
-          sed -i "s/versionCode 14/versionCode 19/; s/versionName '1.7.2'/versionName '1.7.7'/" source/app/build.gradle
+          sed -i "s/versionCode 14/versionCode 20/; s/versionName '1.7.2'/versionName '1.7.8'/" source/app/build.gradle
           grep -q "versionName '1.7.7'" source/app/build.gradle
           grep -q 'scheduleTaskReminder' source/app/src/main/java/com/hayaplanner/app/MainActivity.java
           grep -q 'scheduleTaskReminder' source/app/src/main/java/com/hayaplanner/app/PlannerReminderScheduler.java
@@ -45,6 +45,9 @@ jobs:
           grep -q 'PrayerCalendarFetcher.refreshAsync(context)' source/app/src/main/java/com/hayaplanner/app/PlannerReminderScheduler.java
           grep -q 'PlannerReminderScheduler.reschedule(app)' source/app/src/main/java/com/hayaplanner/app/PrayerCalendarFetcher.java
           grep -q 'NotificationManager.IMPORTANCE_HIGH' source/app/src/main/java/com/hayaplanner/app/PlannerReminderReceiver.java
+          grep -q 'channel.setSound(Uri.parse(sound), attributes)' source/app/src/main/java/com/hayaplanner/app/PlannerReminderReceiver.java
+          grep -q 'CHANNEL_PREFIX = "haya_planner_alerts_v3_' source/app/src/main/java/com/hayaplanner/app/PlannerReminderReceiver.java
+          grep -q 'يُستخدم الملف الذي تختارينه هنا' source/app/src/main/assets/index.html
 
       - name: Download offline Quran pages
         run: python3 source/scripts/download_mushaf_pages.py
