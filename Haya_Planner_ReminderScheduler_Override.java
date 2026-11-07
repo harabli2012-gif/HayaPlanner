@@ -38,23 +38,30 @@ public final class PlannerReminderScheduler {
         String raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_CONFIG, "{}");
         JSONObject config;
         try { config = new JSONObject(raw); } catch (Exception e) { config = new JSONObject(); }
+        boolean refreshPrayerTimes = false;
         for (String id : IDS) {
             cancel(context, id);
+            JSONObject item = config.optJSONObject(id);
+            if (item != null && item.optBoolean("enabled", false) && usesPrayerRelativeTime(id, item)
+                    && nextPrayerTrigger(context, item) <= System.currentTimeMillis()) refreshPrayerTimes = true;
             scheduleNext(context, config, id);
         }
+        if (refreshPrayerTimes) PrayerCalendarFetcher.refreshAsync(context);
     }
 
     public static void scheduleNext(Context context, JSONObject config, String id) {
         try {
             JSONObject item = config.optJSONObject(id);
             if (item == null || !item.optBoolean("enabled", false)) return;
-            long at = nextTrigger(id, item);
+            long at = nextTrigger(context, id, item);
             if (at <= System.currentTimeMillis()) return;
             schedule(context, id, at, titleFor(id), "", "", "", true);
         } catch (Exception ignored) {}
     }
 
-    private static long nextTrigger(String id, JSONObject item) {
+    private static long nextTrigger(Context context, String id, JSONObject item) {
+        if (("adhkarMorning".equals(id) || "adhkarEvening".equals(id)) && usesPrayerRelativeTime(id, item))
+            return nextPrayerTrigger(context, item);
         LocalDateTime now = LocalDateTime.now(ZONE);
         if ("water".equals(id)) {
             LocalTime start = LocalTime.parse(item.optString("start", "08:30"));
@@ -84,6 +91,33 @@ public final class PlannerReminderScheduler {
         LocalDateTime candidate = date.atTime(time);
         if (!candidate.isAfter(now)) candidate = candidate.plusDays(1);
         return candidate.atZone(ZONE).toInstant().toEpochMilli();
+    }
+
+    private static boolean usesPrayerRelativeTime(String id, JSONObject item) {
+        if (!("adhkarMorning".equals(id) || "adhkarEvening".equals(id))) return false;
+        String mode = item.optString("mode", "");
+        if ("fixed".equals(mode)) return false;
+        return "afterPrayer".equals(mode) || !item.optString("afterPrayer", "").isEmpty();
+    }
+
+    private static long nextPrayerTrigger(Context context, JSONObject item) {
+        String prayerId = item.optString("afterPrayer", "");
+        if (prayerId.isEmpty()) return 0L;
+        int offsetMinutes = Math.max(0, Math.min(120, item.optInt("offsetMinutes", 15)));
+        long now = System.currentTimeMillis();
+        long next = Long.MAX_VALUE;
+        org.json.JSONArray rows = PrayerScheduler.loadSchedule(context);
+        for (int i = 0; i < rows.length(); i++) {
+            try {
+                JSONObject row = rows.getJSONObject(i);
+                if (!prayerId.equals(row.optString("prayerId"))) continue;
+                LocalDateTime prayer = LocalDateTime.parse(row.getString("date") + "T" + row.getString("time"));
+                long candidate = prayer.atZone(PrayerScheduler.AMMAN).toInstant().toEpochMilli()
+                        + offsetMinutes * 60_000L;
+                if (candidate > now && candidate < next) next = candidate;
+            } catch (Exception ignored) {}
+        }
+        return next == Long.MAX_VALUE ? 0L : next;
     }
 
     public static void schedulePomodoro(Context context, long at, String taskId, String taskTitle, String dayKey) {
