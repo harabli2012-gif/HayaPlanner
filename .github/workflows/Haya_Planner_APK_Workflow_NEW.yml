@@ -89,7 +89,7 @@ jobs:
                   assert name in names, f'missing app resource: {name}'
               html = z.read('assets/index.html').decode('utf-8')
               receiver = z.read('classes.dex')
-              assert 'PlannerReminderReceiver' in names, 'missing reminder receiver'
+              assert b'PlannerReminderReceiver' in receiver, 'missing reminder receiver in dex'
               assert 'السبحة والعداد' in html, 'missing Tasbeeh counter'
               assert 'قارئ داخلي' in html, 'missing in-app Kahf reader'
               assert 'التنبيهات داخل التطبيق' in html, 'missing in-app reminders settings'
