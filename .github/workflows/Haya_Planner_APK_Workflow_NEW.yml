@@ -97,6 +97,7 @@ jobs:
               assert "afterPrayer:'prayer_fajr'" in html, 'missing Fajr-relative morning adhkar default'
               assert "afterPrayer:'prayer_asr'" in html, 'missing Asr-relative evening adhkar default'
               assert 'offsetMinutes:15' in html, 'missing 15-minute adhkar reminder offset'
+              assert "if(type==='water')" in html and 'target.scrollIntoView' in html, 'water reminder must focus water card'
               assert 'afterPrayer' in html, 'missing prayer-relative reminder mode'
               print(f'APK verified: {len(pages)} offline Mushaf pages plus Tasbeeh, Kahf reader, reminders, app and adhkar assets')
           PY
