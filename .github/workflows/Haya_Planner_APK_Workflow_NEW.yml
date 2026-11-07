@@ -9,6 +9,7 @@ on:
       - 'Haya_Planner_Settings_Override.html'
       - 'Haya_Planner_ReminderScheduler_Override.java'
       - 'Haya_Planner_PrayerCalendarFetcher_Override.java'
+      - 'Haya_Planner_ReminderReceiver_Override.java'
 
 permissions:
   contents: read
@@ -35,12 +36,15 @@ jobs:
           cp Haya_Planner_MainActivity_Override.java source/app/src/main/java/com/hayaplanner/app/MainActivity.java
           cp Haya_Planner_ReminderScheduler_Override.java source/app/src/main/java/com/hayaplanner/app/PlannerReminderScheduler.java
           cp Haya_Planner_PrayerCalendarFetcher_Override.java source/app/src/main/java/com/hayaplanner/app/PrayerCalendarFetcher.java
-          sed -i "s/versionCode 14/versionCode 18/; s/versionName '1.7.2'/versionName '1.7.6'/" source/app/build.gradle
-          grep -q "versionName '1.7.6'" source/app/build.gradle
+          cp Haya_Planner_ReminderReceiver_Override.java source/app/src/main/java/com/hayaplanner/app/PlannerReminderReceiver.java
+          sed -i "s/versionCode 14/versionCode 19/; s/versionName '1.7.2'/versionName '1.7.7'/" source/app/build.gradle
+          grep -q "versionName '1.7.7'" source/app/build.gradle
           grep -q 'scheduleTaskReminder' source/app/src/main/java/com/hayaplanner/app/MainActivity.java
           grep -q 'scheduleTaskReminder' source/app/src/main/java/com/hayaplanner/app/PlannerReminderScheduler.java
           grep -q 'nextPrayerTrigger' source/app/src/main/java/com/hayaplanner/app/PlannerReminderScheduler.java
+          grep -q 'PrayerCalendarFetcher.refreshAsync(context)' source/app/src/main/java/com/hayaplanner/app/PlannerReminderScheduler.java
           grep -q 'PlannerReminderScheduler.reschedule(app)' source/app/src/main/java/com/hayaplanner/app/PrayerCalendarFetcher.java
+          grep -q 'NotificationManager.IMPORTANCE_HIGH' source/app/src/main/java/com/hayaplanner/app/PlannerReminderReceiver.java
 
       - name: Download offline Quran pages
         run: python3 source/scripts/download_mushaf_pages.py
@@ -96,6 +100,8 @@ jobs:
               assert "afterPrayer:'prayer_fajr'" in html, 'missing Fajr-relative morning adhkar default'
               assert "afterPrayer:'prayer_asr'" in html, 'missing Asr-relative evening adhkar default'
               assert 'offsetMinutes:15' in html, 'missing 15-minute adhkar reminder offset'
+              assert "if(type==='water')" in html and 'target.scrollIntoView' in html, 'water reminder must focus water card'
+              assert "if(type==='adhkarMorning'||type==='adhkarEvening'||type==='adhkarSleep')" in html and 'target.scrollIntoView' in html, 'adhkar reminders must focus adhkar reader'
               assert 'afterPrayer' in html, 'missing prayer-relative reminder mode'
               print(f'APK verified: {len(pages)} offline Mushaf pages plus Tasbeeh, Kahf reader, reminders, app and adhkar assets')
           PY
