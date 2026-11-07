@@ -9,6 +9,7 @@ on:
       - 'Haya_Planner_Settings_Override.html'
       - 'Haya_Planner_ReminderScheduler_Override.java'
       - 'Haya_Planner_PrayerCalendarFetcher_Override.java'
+      - 'Haya_Planner_ReminderReceiver_Override.java'
 
 permissions:
   contents: read
@@ -35,6 +36,7 @@ jobs:
           cp Haya_Planner_MainActivity_Override.java source/app/src/main/java/com/hayaplanner/app/MainActivity.java
           cp Haya_Planner_ReminderScheduler_Override.java source/app/src/main/java/com/hayaplanner/app/PlannerReminderScheduler.java
           cp Haya_Planner_PrayerCalendarFetcher_Override.java source/app/src/main/java/com/hayaplanner/app/PrayerCalendarFetcher.java
+          cp Haya_Planner_ReminderReceiver_Override.java source/app/src/main/java/com/hayaplanner/app/PlannerReminderReceiver.java
           sed -i "s/versionCode 14/versionCode 19/; s/versionName '1.7.2'/versionName '1.7.7'/" source/app/build.gradle
           grep -q "versionName '1.7.7'" source/app/build.gradle
           grep -q 'scheduleTaskReminder' source/app/src/main/java/com/hayaplanner/app/MainActivity.java
@@ -86,6 +88,8 @@ jobs:
               for name in ('assets/index.html', 'assets/adhkar-data.js', 'classes.dex'):
                   assert name in names, f'missing app resource: {name}'
               html = z.read('assets/index.html').decode('utf-8')
+              receiver = z.read('classes.dex')
+              assert 'PlannerReminderReceiver' in names, 'missing reminder receiver'
               assert 'السبحة والعداد' in html, 'missing Tasbeeh counter'
               assert 'قارئ داخلي' in html, 'missing in-app Kahf reader'
               assert 'التنبيهات داخل التطبيق' in html, 'missing in-app reminders settings'
@@ -98,6 +102,7 @@ jobs:
               assert "afterPrayer:'prayer_asr'" in html, 'missing Asr-relative evening adhkar default'
               assert 'offsetMinutes:15' in html, 'missing 15-minute adhkar reminder offset'
               assert "if(type==='water')" in html and 'target.scrollIntoView' in html, 'water reminder must focus water card'
+              assert "if(type==='adhkarMorning'||type==='adhkarEvening'||type==='adhkarSleep')" in html and 'target.scrollIntoView' in html, 'adhkar reminders must focus adhkar reader'
               assert 'afterPrayer' in html, 'missing prayer-relative reminder mode'
               print(f'APK verified: {len(pages)} offline Mushaf pages plus Tasbeeh, Kahf reader, reminders, app and adhkar assets')
           PY
