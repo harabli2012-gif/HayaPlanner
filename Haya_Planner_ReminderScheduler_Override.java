@@ -54,7 +54,10 @@ public final class PlannerReminderScheduler {
             JSONObject item = config.optJSONObject(id);
             if (item == null || !item.optBoolean("enabled", false)) return;
             long at = nextTrigger(context, id, item);
-            if (at <= System.currentTimeMillis()) return;
+            if (at <= System.currentTimeMillis()) {
+                if (usesPrayerRelativeTime(id, item)) PrayerCalendarFetcher.refreshAsync(context);
+                return;
+            }
             schedule(context, id, at, titleFor(id), "", "", "", true);
         } catch (Exception ignored) {}
     }
