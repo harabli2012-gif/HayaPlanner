@@ -396,7 +396,8 @@ public class MainActivity extends Activity {
         public String getAudioStatus(String kind) {
             String key = "notification".equals(kind) ? AUDIO_NOTIFICATION : AUDIO_ADHAN;
             String uri = getSharedPreferences(AUDIO_PREFS, MODE_PRIVATE).getString(key, "");
-            return uri.isEmpty() ? "لم يتم اختيار ملف صوت بعد" : "تم اختيار صوت محفوظ على هذا الجهاز";
+            if (uri.isEmpty()) return "لم يتم اختيار ملف صوت بعد";
+            return "notification".equals(kind) ? "تم حفظ الصوت وسيُستخدم للتنبيهات القادمة" : "تم اختيار صوت أذان محفوظ على هذا الجهاز";
         }
 
         @JavascriptInterface
@@ -487,7 +488,7 @@ public class MainActivity extends Activity {
                 try { getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION); } catch (Exception ignored) {}
                 String key = "notification".equals(pendingAudioKind) ? AUDIO_NOTIFICATION : AUDIO_ADHAN;
                 getSharedPreferences(AUDIO_PREFS, MODE_PRIVATE).edit().putString(key, uri.toString()).apply();
-                Toast.makeText(this, "تم حفظ الصوت على هذا الجهاز", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "notification".equals(pendingAudioKind) ? "تم حفظ النغمة وستُستخدم في التنبيهات القادمة" : "تم حفظ صوت الأذان على هذا الجهاز", Toast.LENGTH_SHORT).show();
                 if (webView != null) webView.evaluateJavascript("window.refreshAudioStatus && window.refreshAudioStatus()", null);
             }
             pendingAudioKind = null;
